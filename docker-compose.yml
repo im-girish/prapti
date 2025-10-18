@@ -1,0 +1,29 @@
+services:
+  prapti-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Since Dockerfile is at root
+    container_name: prapti-backend
+    ports:
+      - "5001:5001"
+    environment:
+      - DATABASE_URL=postgresql://prapti_user:prapti_pass@db:5432/prapti_db
+    depends_on:
+      - db
+    volumes:
+      - ./backend/app:/app/app  # only mount backend source folder, frontend baked into image
+
+  db:
+    image: postgres:15-alpine
+    container_name: prapti-db
+    environment:
+      POSTGRES_USER: prapti_user
+      POSTGRES_PASSWORD: prapti_pass
+      POSTGRES_DB: prapti_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
