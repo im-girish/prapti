@@ -53,15 +53,33 @@ class Invoice(Base):
 
 # 4) FastHTML app and static/template mounts
 app, rt = fast_app()
-STATIC_DIR = "/app/frontend/static"      # inside container
-TEMPLATE_DIR = "/app/frontend/templates" # inside container
+STATIC_DIR = "/app/frontend/static"
+TEMPLATE_DIR = "/app/frontend/templates"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# 5) HTML dashboard
+# 5) HTML Pages
 @rt("/")
+def landing():
+    landing_path = os.path.join(TEMPLATE_DIR, "landing.html")
+    with open(landing_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+@rt("/customer")
+def customer():
+    customer_path = os.path.join(TEMPLATE_DIR, "customer.html")
+    with open(customer_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+@rt("/dashboard")
 def dashboard():
     dashboard_path = os.path.join(TEMPLATE_DIR, "dashboard.html")
     with open(dashboard_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+@rt("/invoice-details")
+def invoice_details():
+    invoice_details_path = os.path.join(TEMPLATE_DIR, "invoice-details.html")
+    with open(invoice_details_path, "r", encoding="utf-8") as f:
         return f.read()
 
 # 6) API: Receivables aging
@@ -108,60 +126,16 @@ def receivables_report(customer_id: str):
 
     session.close()
 
-    # Return empty summary with empty details instead of raising 404,
-    # so front-end can always parse JSON successfully.
     if not invoices:
         return {"customer_id": customer_id, "summary": buckets, "detailed": []}
 
     return {"customer_id": customer_id, "summary": buckets, "detailed": detailed}
 
-# Optional: print routes during boot to verify registration
+# Print routes during boot to verify registration
 for route in app.routes:
     print(f"ROUTE: {getattr(route, 'path', str(route))}")
 
-# 7) Create tables and start server
+# Create tables and start server
 if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)
-    # Serve on 0.0.0.0:5001 to match your browser (localhost:5001)
     serve(host="0.0.0.0", port=5001)
-
-@rt("/api/dev/seed/{customer_id}", methods=["POST"])
-def seed_sample_data(customer_id: str):
-    """Insert sample invoices for quick testing."""
-    session = SessionLocal()
-    # prevent duplicates on re-seed
-    session.query(Invoice).filter(Invoice.customer_id == customer_id).delete()
-    today = date.today()
-    samples = [
-        # current (due today or future -> aging 0)
-        Invoice(customer_id=customer_id, invoice_number="INV-001",
-                invoice_date=today, due_date=today, amount_due=500.0, amount_paid=100.0),
-        # 1-30 days overdue
-        Invoice(customer_id=customer_id, invoice_number="INV-002",
-                invoice_date=today, due_date=today.replace(day=max(1, today.day-10)),
-                amount_due=1200.0, amount_paid=200.0),
-        # 31-60
-        Invoice(customer_id=customer_id, invoice_number="INV-003",
-                invoice_date=today, due_date=today.replace(day=max(1, today.day-40)),
-                amount_due=900.0, amount_paid=0.0),
-        # 61-90
-        Invoice(customer_id=customer_id, invoice_number="INV-004",
-                invoice_date=today, due_date=today.replace(day=max(1, today.day-70)),
-                amount_due=2000.0, amount_paid=250.0),
-        # > 90
-        Invoice(customer_id=customer_id, invoice_number="INV-005",
-                invoice_date=today, due_date=today.replace(day=max(1, today.day-110)),
-                amount_due=1500.0, amount_paid=0.0),
-    ]
-    session.add_all(samples)
-    session.commit()
-    session.close()
-    return {"status": "ok", "seeded": len(samples), "customer_id": customer_id}
-
-@rt("/api/dev/reset/{customer_id}", methods=["POST"])
-def reset_customer_data(customer_id: str):
-    session = SessionLocal()
-    deleted = session.query(Invoice).filter(Invoice.customer_id == customer_id).delete()
-    session.commit()
-    session.close()
-    return {"status": "ok", "deleted": deleted, "customer_id": customer_id}

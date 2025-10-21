@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invoice Details - Prapti</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@2.31.0/dist/full.css"
+      rel="stylesheet"
+    />
+    <link href="/frontend/static/css/style.css" rel="stylesheet" />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-sm border-b">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <div class="flex items-center space-x-4">
+            <button onclick="goBackToDashboard()" class="back-dashboard-btn">
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                ></path>
+              </svg>
+              Back to Dashboard
+            </button>
+            <div>
+              <h1 class="text-xl font-semibold text-gray-800">
+                Invoice Details
+              </h1>
+              <p class="text-sm text-gray-600">
+                Prapti – Receivables Aging Dashboard
+              </p>
+            </div>
+          </div>
+          <div class="text-sm text-gray-500">
+            Customer: <span id="currentCustomer" class="font-medium"></span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="bg-white shadow rounded-lg mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+          >
+            <h2 class="text-lg font-semibold text-gray-800">Filter Invoices</h2>
+            <select
+              id="filterSelect"
+              class="select select-bordered w-full sm:w-64"
+            >
+              <option value="all">All Invoices</option>
+              <option value="current">Current (0 days)</option>
+              <option value="1_30">1-30 Days</option>
+              <option value="31_60">31-60 Days</option>
+              <option value="61_90">61-90 Days</option>
+              <option value="over_90">Over 90 Days</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-800">Invoice Details</h2>
+        </div>
+        <div class="p-6">
+          <div class="overflow-x-auto">
+            <table class="table table-zebra w-full">
+              <thead>
+                <tr>
+                  <th class="bg-gray-50">Invoice #</th>
+                  <th class="bg-gray-50">Invoice Date</th>
+                  <th class="bg-gray-50">Due Date</th>
+                  <th class="bg-gray-50 text-right">Amount Due</th>
+                  <th class="bg-gray-50 text-right">Amount Paid</th>
+                  <th class="bg-gray-50 text-right">Outstanding</th>
+                  <th class="bg-gray-50 text-right">Aging Days</th>
+                </tr>
+              </thead>
+              <tbody id="invoiceData"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="loadingState" class="hidden text-center py-12">
+        <div class="loading loading-spinner loading-lg text-primary"></div>
+        <p class="mt-4 text-gray-600">Loading invoice data...</p>
+      </div>
+
+      <div id="emptyState" class="hidden text-center py-12">
+        <div class="text-gray-400 mb-4">
+          <svg
+            class="w-16 h-16 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            ></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">
+          No invoices found
+        </h3>
+        <p class="text-gray-600">
+          No invoices match the selected filter criteria.
+        </p>
+      </div>
+    </div>
+
+    <script src="/frontend/static/js/interactivity.js"></script>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const customerId = urlParams.get("customer_id") || "test_customer";
+      const filter = urlParams.get("filter") || "all";
+
+      document.getElementById("currentCustomer").textContent = customerId;
+      document.getElementById("filterSelect").value = filter;
+
+      function goBackToDashboard() {
+        window.location.href = `/dashboard?customer_id=${encodeURIComponent(
+          customerId
+        )}`;
+      }
+
+      document
+        .getElementById("filterSelect")
+        .addEventListener("change", function () {
+          const newFilter = this.value;
+          window.location.href = `/invoice-details?customer_id=${encodeURIComponent(
+            customerId
+          )}&filter=${newFilter}`;
+        });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        loadInvoiceDetails(customerId, filter);
+      });
+    </script>
+  </body>
+</html>

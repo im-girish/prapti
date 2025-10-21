@@ -1,62 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Prapti Receivables Dashboard</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prapti – Receivables Aging Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@2.31.0/dist/full.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="/frontend/static/css/style.css" rel="stylesheet" />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <div class="flex items-center space-x-4">
+            <button onclick="window.location.href='/customer'" class="back-btn">
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                ></path>
+              </svg>
+              Back
+            </button>
+            <div>
+              <h1 class="text-xl font-semibold text-gray-800">
+                Prapti – Receivables Aging Dashboard
+              </h1>
+              <p class="text-sm text-gray-600">By Gireesh</p>
+            </div>
+          </div>
+          <div class="text-sm text-gray-500">
+            Customer: <span id="currentCustomer" class="font-medium"></span>
+          </div>
+        </div>
+      </div>
+    </header>
 
-  <!-- Tailwind + DaisyUI CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@2.31.0/dist/full.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <!-- Main Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column - Summary and Actions -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Aging Summary Cards -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-800">
+                Aging Summary (₹)
+              </h2>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="summary-card">
+                  <div class="text-sm text-gray-600 mb-2">Current</div>
+                  <div
+                    class="text-2xl font-bold text-green-600"
+                    id="currentAmount"
+                  >
+                    ₹0
+                  </div>
+                </div>
+                <div class="summary-card">
+                  <div class="text-sm text-gray-600 mb-2">1-30 Days</div>
+                  <div class="text-2xl font-bold text-blue-600" id="1_30Amount">
+                    ₹0
+                  </div>
+                </div>
+                <div class="summary-card">
+                  <div class="text-sm text-gray-600 mb-2">31-60 Days</div>
+                  <div
+                    class="text-2xl font-bold text-yellow-600"
+                    id="31_60Amount"
+                  >
+                    ₹0
+                  </div>
+                </div>
+                <div class="summary-card">
+                  <div class="text-sm text-gray-600 mb-2">61-90 Days</div>
+                  <div
+                    class="text-2xl font-bold text-orange-600"
+                    id="61_90Amount"
+                  >
+                    ₹0
+                  </div>
+                </div>
+                <div class="summary-card">
+                  <div class="text-sm text-gray-600 mb-2">Over 90 Days</div>
+                  <div
+                    class="text-2xl font-bold text-red-600"
+                    id="over_90Amount"
+                  >
+                    ₹0
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-  <!-- Static assets served via FastAPI StaticFiles -->
-  <link href="/frontend/static/css/style.css" rel="stylesheet" />
-  <link rel="icon" href="/static/favicon.ico" />
-</head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-5xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">Prapti – Receivables Aging Dashboard By Giri!!</h1>
+          <!-- Table Style Aging Summary -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-800">
+                Aging Summary Details
+              </h2>
+            </div>
+            <div class="p-6">
+              <div class="overflow-x-auto">
+                <table class="aging-summary-table">
+                  <thead>
+                    <tr>
+                      <th class="aging-header">BUCKET</th>
+                      <th class="aging-header">AMOUNT</th>
+                    </tr>
+                  </thead>
+                  <tbody id="agingSummaryTable">
+                    <tr>
+                      <td class="aging-bucket">Current</td>
+                      <td class="aging-amount" id="tableCurrent">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td class="aging-bucket">1-30 Days</td>
+                      <td class="aging-amount" id="table1_30">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td class="aging-bucket">31-60 Days</td>
+                      <td class="aging-amount" id="table31_60">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td class="aging-bucket">61-90 Days</td>
+                      <td class="aging-amount" id="table61_90">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td class="aging-bucket">Over 90 Days</td>
+                      <td class="aging-amount" id="tableOver90">₹0.00</td>
+                    </tr>
+                    <tr class="aging-total-row">
+                      <td class="aging-bucket font-semibold">
+                        TOTAL OUTSTANDING
+                      </td>
+                      <td class="aging-amount font-semibold" id="tableTotal">
+                        ₹0.00
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-    <div class="mb-4">
-      <label for="customerId" class="block mb-2 font-semibold">Enter Customer ID:</label>
-      <input type="text" id="customerId" class="input input-bordered w-full max-w-xs" value="test_customer" />
-      <button id="fetchBtn" class="btn btn-primary mt-3">Fetch Report</button>
+          <!-- Quick Actions -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-800">Quick Actions</h2>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="viewDetailedSummary()" class="action-btn">
+                  <div class="action-icon">📊</div>
+                  <div class="action-text">View Detailed Summary</div>
+                </button>
+                <button onclick="viewInvoiceDetails()" class="action-btn">
+                  <div class="action-icon">📋</div>
+                  <div class="action-text">View Invoice Details</div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aging Distribution Chart -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-800">
+                Aging Distribution
+              </h2>
+            </div>
+            <div class="p-6">
+              <div class="chart-container">
+                <canvas id="agingChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column - Top Debtors -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-800">Top Debtors</h2>
+            </div>
+            <div class="p-6">
+              <div id="debtorsList" class="space-y-4">
+                <!-- Debtors will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div
+        id="loadingState"
+        class="hidden fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50"
+      >
+        <div class="text-center">
+          <div
+            class="loading loading-spinner loading-lg text-primary mb-4"
+          ></div>
+          <p class="text-gray-600 font-medium">Loading receivables data...</p>
+        </div>
+      </div>
     </div>
 
-    <section id="summary" class="bg-white shadow rounded p-4 mb-6 hidden">
-      <h2 class="text-xl font-semibold mb-4">Aging Summary ($)</h2>
-      <table class="table w-full">
-        <thead><tr><th>Bucket</th><th>Amount</th></tr></thead>
-        <tbody id="summaryData"></tbody>
-      </table>
+    <script src="/frontend/static/js/interactivity.js"></script>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const customerId = urlParams.get("customer_id") || "test_customer";
 
-      <!-- Chart wrapper keeps the pie small and centered -->
-      <div class="chart-wrap">
-        <canvas id="agingChart" class="mt-4" width="500px" height="500px" style="display: block; box-sizing: border-box;"></canvas>
-      </div>
-    </section>
+      document.getElementById("currentCustomer").textContent = customerId;
 
-    <section id="details" class="bg-white shadow rounded p-4 hidden">
-      <h2 class="text-xl font-semibold mb-4">Invoice Details</h2>
-      <table class="table w-full">
-        <thead>
-          <tr>
-            <th>Invoice #</th>
-            <th>Invoice Date</th>
-            <th>Due Date</th>
-            <th>Amount Due</th>
-            <th>Amount Paid</th>
-            <th>Outstanding</th>
-            <th>Aging Days</th>
-          </tr>
-        </thead>
-        <tbody id="detailsData"></tbody>
-      </table>
-    </section>
-  </div>
+      function viewDetailedSummary() {
+        window.location.href = `/dashboard?customer_id=${encodeURIComponent(
+          customerId
+        )}`;
+      }
 
-  <!-- App script -->
-  <script src="/frontend/static/js/interactivity.js" defer></script>
-</body>
+      function viewInvoiceDetails() {
+        window.location.href = `/invoice-details?customer_id=${encodeURIComponent(
+          customerId
+        )}&filter=all`;
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        loadDashboardData(customerId);
+      });
+    </script>
+  </body>
 </html>

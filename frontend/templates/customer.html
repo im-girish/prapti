@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Enter Customer ID - Prapti</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@2.31.0/dist/full.css"
+      rel="stylesheet"
+    />
+    <link href="/frontend/static/css/style.css" rel="stylesheet" />
+  </head>
+  <body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
+    <div class="min-h-screen flex items-center justify-center p-6">
+      <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+        <button
+          onclick="window.location.href='/'"
+          class="btn btn-ghost btn-sm mb-6"
+        >
+          <svg
+            class="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            ></path>
+          </svg>
+          Back
+        </button>
+
+        <div class="text-center mb-8">
+          <h1 class="text-2xl font-bold text-gray-800 mb-2">
+            Enter Customer ID
+          </h1>
+          <p class="text-gray-600">
+            Please provide the customer identifier to fetch receivables data
+          </p>
+        </div>
+
+        <div class="space-y-6">
+          <div>
+            <label
+              for="customerId"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Customer ID</label
+            >
+            <input
+              type="text"
+              id="customerId"
+              class="input input-bordered w-full"
+              placeholder="Enter customer ID"
+              value="test_customer"
+              required
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 pt-4">
+            <button
+              type="button"
+              onclick="fetchReport('summary')"
+              class="btn btn-primary"
+            >
+              Aging Summary
+            </button>
+            <button
+              type="button"
+              onclick="fetchReport('chart')"
+              class="btn btn-secondary"
+            >
+              View Chart
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200">
+          <p class="text-sm text-gray-600 mb-3">Quick Actions:</p>
+          <button
+            onclick="viewAllInvoices()"
+            class="btn btn-outline btn-sm w-full"
+          >
+            View All Invoice Details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function fetchReport(type) {
+        const customerId = document.getElementById("customerId").value.trim();
+        if (!customerId) {
+          alert("Please enter a Customer ID");
+          return;
+        }
+
+        if (type === "summary") {
+          window.location.href = `/dashboard?customer_id=${encodeURIComponent(
+            customerId
+          )}`;
+        } else {
+          window.location.href = `/dashboard?customer_id=${encodeURIComponent(
+            customerId
+          )}&view=chart`;
+        }
+      }
+
+      function viewAllInvoices() {
+        const customerId =
+          document.getElementById("customerId").value.trim() || "test_customer";
+        window.location.href = `/invoice-details?customer_id=${encodeURIComponent(
+          customerId
+        )}&filter=all`;
+      }
+    </script>
+  </body>
+</html>
